@@ -1,0 +1,9 @@
+useDynLib(NldsPred)
+
+export(NldsPredFnTlsOpts, NldsPredFnExpOpts, NldsPredSetConvergent,
+       NldsPredSetKFold, NldsPredSetLooc, NldsPredSetBootstrap,
+       NldsPredRun, NldsPredGetTable
+)
+
+importFrom(Rcpp, evalCpp)
+

@@ -1,0 +1,41 @@
+CXX=clang++
+PKG_CPPFLAGS= -I./libnlpre/
+PKG_LIBS= $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) -L./libnlpre/ -lnlpre
+LIBS=-L./ -L./libnlpre/
+
+SOURCES= NldsPredGetTable.cpp NldsPredRun.cpp RcppExports.cpp
+OBJECTS= $(SOURCES:.cpp=.o)
+
+SOURCES_NLPRE_ALL=./libnlpre/bundle.c ./libnlpre/bundle.h ./libnlpre/bundle_log.h \
+./libnlpre/datalimits.h ./libnlpre/dqrdc.f ./libnlpre/dsvdc.f \
+./libnlpre/dtls.f ./libnlpre/embed.h ./libnlpre/heap.c \
+./libnlpre/heap.h ./libnlpre/housh.f ./libnlpre/kdt.c \
+./libnlpre/kdt.h ./libnlpre/fn.c ./libnlpre/fn.h \
+./libnlpre/fn_log.h ./libnlpre/fn_exp.c ./libnlpre/fn_exp.h \
+./libnlpre/fn_exp_log.h ./libnlpre/fn_tls.c ./libnlpre/fn_tls.h \
+./libnlpre/fn_tls_log.h ./libnlpre/log.c ./libnlpre/log.h \
+./libnlpre/log_meta.h ./libnlpre/logtotbl.c ./libnlpre/logtotbl.h \
+./libnlpre/mkembed.c ./libnlpre/mkembed.h ./libnlpre/mkembed_log.h \
+./libnlpre/point.c ./libnlpre/point.h ./libnlpre/sets.c \
+./libnlpre/sets.h ./libnlpre/sets_log.h ./libnlpre/stat.c \
+./libnlpre/stat.h ./libnlpre/stat_log.h \
+./libnlpre/tr2.f ./libnlpre/traverse.c ./libnlpre/traverse.h \
+./libnlpre/traverse_log.h ./libnlpre/traverse_stat.h ./libnlpre/tsfile.c \
+./libnlpre/tsfile.h ./libnlpre/tstoembdef.c ./libnlpre/tstoembdef.h ./libnlpre/tsdat.h
+
+OBJECTS_NLPRE_ALL_C = $(SOURCES_NLPRE_ALL:.c=.o)
+OBJECTS_NLPRE_ALL = $(OBJECTS_NLPRE_ALL_C:.f=.o)
+
+all: ($SHLIB)
+
+($SHLIB): $(OBJECTS) ./libnlpre/libnlpre.a
+
+./libnlpre/libnlpre.a: $(OBJECTS_NLPRE_ALL)
+	$(AR) -crvs ./libnlpre/libnlpre.a $(OBJECTS_NLPRE_ALL)
+
+clean:
+	(cd ./libnlpre; rm -f *.o)
+	rm -f *.dll
+	rm -f *.exe
+	rm -f *.o
+	rm -f *.so

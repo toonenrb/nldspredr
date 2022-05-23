@@ -1,0 +1,3 @@
+[submodule "nldspredl"]
+	path = nldspredl
+	url = git@github.com:toonenrb/nldspredl.git

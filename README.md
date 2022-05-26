@@ -10,6 +10,7 @@ To install the R package, download NldsPred_1.0.tar.gz and install using
 
 
 See the documentation.
+(Documentation still in development)
 
 ### Options
 

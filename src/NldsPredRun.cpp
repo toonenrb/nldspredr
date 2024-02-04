@@ -76,7 +76,8 @@ List NldsPredFnTlsOpts (const double thetaMin = 0.0,
                         const double restrictPred = 0.0,
                         const bool warnIsError = false,
                         const std::string refMeth = "mean",
-                        const int refXnn = 0
+                        const int refXnn = 0,
+                        const bool objectOnlyOnce = true
                        )
 {
 BEGIN_RCPP
@@ -133,7 +134,8 @@ BEGIN_RCPP
                          Named("excl") = (int) iexcl,
                          Named("varWin") = varWin,
                          Named("refMeth") = (int) iref_meth,
-                         Named("refXnn") = refXnn);
+                         Named("refXnn") = refXnn,
+                         Named("objectOnlyOnce") = objectOnlyOnce);
 END_RCPP
 }
 
@@ -142,7 +144,8 @@ List NldsPredFnExpOpts (const double expK = 1.0,
                         const int nnnAdd = 1,
                         const std::string excl = "timeCoord",
                         const int varWin = 0,
-                        const std::string fnDenom = "avgLib"
+                        const std::string fnDenom = "avgLib",
+                        const bool objectOnlyOnce = true
                        )
 {
 BEGIN_RCPP
@@ -181,7 +184,8 @@ BEGIN_RCPP
                          Named("excl") = (int) iexcl,
                          Named("varWin") = varWin,
                          Named("fnDenom") = (int) ifn_denom,
-                         Named("nnnAdd") = nnnAdd);
+                         Named("nnnAdd") = nnnAdd,
+                         Named("objectOnlyOnce") = objectOnlyOnce);
 END_RCPP
 }
 
@@ -284,7 +288,8 @@ String NldsPredRun (const NumericMatrix & data,
                     const Rcpp::Nullable<Rcpp::StringVector> & id = R_NilValue,
                     const Rcpp::Nullable<Rcpp::NumericMatrix> & bundle = R_NilValue,
                     const std::string embLagDef = "",
-                    const std::string embRangeDef = ""
+                    const std::string embRangeDef = "",
+                    const int log_level = 0x0FFF     // Only change when you know what you are doing.
                    )
 {
 BEGIN_RCPP
@@ -364,8 +369,8 @@ BEGIN_RCPP
     fdat->n_dat = data.nrow();
     fdat->dat   = CopyNumericMatrix (data);
 
-    // Open the binary logfile where all output will be written to. 0xFFFF = log everything.
-    if (open_bin_log_file (logFile.c_str(), 0xFFFF) < 0)
+    // Open the binary logfile where all output will be written to. 0x0FFF = log everything.
+    if (open_bin_log_file (logFile.c_str(), log_level) < 0)
         throw (std::invalid_argument ("Could not open the binary logfile: " + logFile));
 
 
@@ -376,34 +381,37 @@ BEGIN_RCPP
     {
         IntegerVector nnnAdd, varWin, excl, fnDenom;
         NumericVector expK;
+        LogicalVector objectOnlyOnce;
 
-        nnnAdd      = fnOpts["nnnAdd"];
-        excl        = fnOpts["excl"];
-        varWin      = fnOpts["varWin"];
-        fnDenom     = fnOpts["fnDenom"];
-        expK        = fnOpts["expK"];
+        nnnAdd         = fnOpts["nnnAdd"];
+        excl           = fnOpts["excl"];
+        varWin         = fnOpts["varWin"];
+        fnDenom        = fnOpts["fnDenom"];
+        expK           = fnOpts["expK"];
+        objectOnlyOnce = fnOpts["objectOnlyOnce"];
 
         if ((ret_val = init_fn_exponential (&new_fn_params, &next_fn_params, &fn,
                         (int) nnnAdd[0], (Texcl) ((int) excl[0]), (int) varWin[0], (Tfn_denom) ((int) fnDenom[0]),
-                        (double) expK[0] )) < 0)
+                        (double) expK[0], (bool) objectOnlyOnce[0] )) < 0)
             throw (std::invalid_argument ("Error when initializing the exponential fn " + std::to_string(ret_val)));
     } else if (fnType[0] == "TLS")
     {
         IntegerVector nnn, varWin, refMeth, refXnn, excl;
         NumericVector thetaMin, thetaMax, deltaTheta, restrictPred;
-        LogicalVector tlsCenter, warnIsError;
+        LogicalVector tlsCenter, warnIsError, objectOnlyOnce;
 
-        thetaMin     = fnOpts["thetaMin"];
-        thetaMax     = fnOpts["thetaMax"];
-        deltaTheta   = fnOpts["deltaTheta"];
-        nnn          = fnOpts["nnn"];
-        excl         = fnOpts["excl"];
-        varWin       = fnOpts["varWin"];
-        tlsCenter    = fnOpts["tlsCenter"];
-        restrictPred = fnOpts["restrictPred"];
-        warnIsError  = fnOpts["warnIsError"];
-        refMeth      = fnOpts["refMeth"];
-        refXnn       = fnOpts["refXnn"];
+        thetaMin       = fnOpts["thetaMin"];
+        thetaMax       = fnOpts["thetaMax"];
+        deltaTheta     = fnOpts["deltaTheta"];
+        nnn            = fnOpts["nnn"];
+        excl           = fnOpts["excl"];
+        varWin         = fnOpts["varWin"];
+        tlsCenter      = fnOpts["tlsCenter"];
+        restrictPred   = fnOpts["restrictPred"];
+        warnIsError    = fnOpts["warnIsError"];
+        refMeth        = fnOpts["refMeth"];
+        refXnn         = fnOpts["refXnn"];
+        objectOnlyOnce = fnOpts["objectOnlyOnce"];
 
         if ((ret_val = init_fn_tls (&new_fn_params, &next_fn_params, &fn,
                         (double) thetaMin[0],
@@ -416,7 +424,8 @@ BEGIN_RCPP
                         (double) restrictPred[0],
                         (bool) warnIsError[0],
                         (Ttls_ref_meth) ((int) refMeth[0]),
-                        (int) refXnn[0] )) < 0)
+                        (int) refXnn[0],
+                        (bool) objectOnlyOnce[0] )) < 0)
             throw (std::invalid_argument ("Error when initializing the total least squares  fn " + std::to_string(ret_val)));
     } else
         throw (std::invalid_argument ("Value of function type not correct: " + fnType[0]));

@@ -96,6 +96,7 @@ BEGIN_RCPP
     FILE     * logfile = NULL;
     char     ** field_names;
     Ttbl_rec * tbl_rec;
+    
 
     logfile = fopen (logFileName.c_str(), "r");
 

@@ -31,9 +31,6 @@ RROOTREQ = DESCRIPTION NAMESPACE
 
 RSRCREQ = NldsPredGetTable.cpp NldsPredRun.cpp Makevars 
 
-# Commented the line below out. Cyclic namespace dependency error.
-# RRREQ = NldsPredExamples.R
-
 .PHONY: clean build install
 
 build: cpall

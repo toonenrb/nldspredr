@@ -65,6 +65,80 @@ CopyNumericMatrix (const NumericMatrix& m)
     return dm;
 }
 
+//' @name NldsPredFnTlsOpts
+//'
+//' @title Set function options for the total least square vector autoregression (TLS-VAR) function
+//'
+//' @description
+//' Validate the parameter values and create a list containing parameters for the TLS-VAR function.
+//' This list will be used as an input argument for NldsPredRun.
+//'
+//' @param thetaMin For the TLS-VAR function, theta controls the amount of ’localness’ 
+//'                 of the VAR estimates With theta = 0.0, all library vectors
+//'                 have an equal influence in the VAR estimate. For linear systems,
+//'                 this should give the best results. For nonlinear systems, it may
+//'                 be that the system shows local linear behavior In that case, in
+//'                 the VAR parameter estimation, the nearest vectors should be
+//'                 assigned a higher weight than more distant vectors. Higher
+//'                 values of theta correspond to the estimates becoming more 
+//'                 local. Usually, theta can range from 0.0 to values around 1.0 or
+//'                 higher. In a validation procedure, different values of theta may
+//'                 be used to find the best results. It is possible to let the program
+//'                 go through a range of values for theta, ranging from thetaMin
+//'                 to thetaMax, with steps of deltaTheta.
+//'
+//' @param thetaMax See thetaMin.
+//'
+//' @param deltaTheta See thetaMin.
+//'
+//' @param nnn      The TLS-VAR function normally uses all library vectors to 
+//'                 compute the parameter values of the linear model. In the case of
+//'                 very large time series this may take a lot of time. Using this 
+//'                 argument it is possible to use only a specified amount of nearest
+//'                 neighbor vectors.
+//'
+//' @param excl     Exclusion method Options: none, timeCoord, timeWin, self.
+//'
+//' @param varWin   When the exclusion method is set to timeWin, use varWin to
+//'                 specify the size of the variable time window around the target.
+//'                 The unit of measurement is the number of time series points
+//'                 before or after the target.
+//'
+//' @param center   Center embedding around the predictee vector. The
+//'                 coordinates of the predictee will all become 0. Options: TRUE, FALSE.
+//'
+//' @param          restrictPred If this argument is greater than zero then predictions that are
+//'                 higher than this value will be discarded when calculating the
+//'                 statistics. This only pertains to the statistics that are calculated
+//'                 by NldsPred; not to additional statistics that are calculated afterwards 
+//'                 by the user.
+//'
+//' @param warnIsError The TLS method may return warnings. If this argument is set
+//'                 to TRUE, the computed values will be regarded as erroneous
+//'                 and will be discarded. Options: TRUE, FALSE.
+//'
+//'
+//' @param refMeth  Similarly to the exponential nearest neighbors function, TLS-VAR 
+//'                 uses a reference distance in the denominator in an exponential
+//'                 weight function. Values can be: mean - to use the average distance between
+//'                 the predictee and all library vectors that
+//'                 are used in the TLS-VAR procedure; and xnn - to use the average
+//'                 distance between the predictee and xnn closest nearest neighbors.
+//'
+//' @param refXnn   If refMeth has been set to xnn then refXnn should be set to the
+//'                 number of neighbors that have to be used to calculate the value
+//'                 of the denominator.
+//'
+//' @return         This function returns a list of parameter settings.
+//'
+//' @examples
+//' # Create a list of parameters for the TLS-VAR
+//' # prediction function.
+//' fo <- NldsPredFnTlsOpts(thetaMin = 0.0, thetaMax = 2.0,
+//' deltaTheta = 0.1, excl = "timeCoord",
+//' center = TRUE, warnIsError = TRUE,
+//' refMeth = "mean")
+//' @export
 // [[Rcpp::export]]
 List NldsPredFnTlsOpts (const double thetaMin = 0.0,
                         const double thetaMax = 2.0,
@@ -139,6 +213,40 @@ BEGIN_RCPP
 END_RCPP
 }
 
+//' @name NldsPredFnExpOpts
+//'
+//' @title Set function options for exponential weighted nearest neighbor function
+//'
+//' @description
+//' Validate the parameter values and create a list containing parameters for the exponential function that uses the nearest
+//' neighbors to predict values. This list will be used as an input argument for NldsPredRun.
+//'
+//' @param expK     The constant value that is used in the exponential function.
+//'
+//' @param nnnAdd   To enclose a point in an n-dimensional space, at least n+1 nearest neighbors around it are needed.
+//'                 This parameter specifies how many additional nearest neighbors to add to the dimension number n.
+//'                 So, to use n+1 nearest neighbors, use a value of 1.
+//'
+//' @param excl     Exclusion method. Options: none, timeCoord, timeWin, self.
+//'
+//' @param varWin   When the exclusion method is set to timeWin, use varWin to specify the size of the variable time window 
+//'                 around the target.
+//'                 The unit of measurement is the number of time series points before or after the target.
+//'
+//' @param fnDenom  The method that is used to calculate the denominator in the fraction in the exponent of the function.
+//'                 Options: min – the denominator is the distance between the closest nearest neighbor and the target;
+//'                 avgNn – the denominator is the average of the distances of the nearest neighbors to the target;
+//'                 avgLib – the denominator is the average distance between all points of the library set.
+//'
+//' @return         This function returns a list of parameter settings.
+//'
+//' @examples
+//' # Create a list of parameters for the exponential
+//' # prediction function.
+//' fo <- NldsPredFnExpOpts (expK = 1.0, nnnAdd = 1, excl = "timeCoord",
+//'                          fnDenom = "min")
+//'
+//' @export
 // [[Rcpp::export]]
 List NldsPredFnExpOpts (const double expK = 1.0,
                         const int nnnAdd = 1,
@@ -189,6 +297,47 @@ BEGIN_RCPP
 END_RCPP
 }
 
+//' @name NldsPredSetConvergent
+//'
+//' @title Create a list of options for the convergent library validation method
+//'
+//' @description
+//' This function checks the arguments and creates a list of options for the convergent library validation method that is used in
+//' Sugihara’s CCM method. This list is used as an input argument for the NldsPredRun function.
+//'
+//' @param libSizeMin   Minimum library size.
+//'
+//' @param libSizeMax   Maximum library size.
+//'
+//' @param libInc       Increment to use when increasing the library size.
+//'
+//' @param libIncFactor When the library size increases, it is often possible to use larger values for the increment that is used.
+//'                     If libIncFactor is greater than 0.0, libInc will be multiplied by this factor after each increment.
+//'
+//' @param shiftMethod  The method that is used to create multiple library sets with the same size.
+//'                     Use option "shift" to move the selection window through the complete set of embedding points.
+//'                     If the right side of the window exceeds the embedding size, it will continue at the beginning.
+//'                     Use option "random" to first put the embedding points in random order.
+//'                     Moving is done similar to the "shift" option. Use option "bootstrap" to create library sets by sampling
+//'                     from the embedding.
+//'
+//' @param libShift     If shiftMethod has been set to "shift" or "random", then this argument specifies the number of
+//'                     points the selection window will move at each shift.
+//'
+//' @param nBootstrap   The number of bootstrap sets to create when shiftMethod has been set to "bootstrap".
+//'
+//' @return             This function returns a list of options.
+//'
+//' @examples
+//' so <- NldsPredSetConvergent(libSizeMin = 10, libSizeMax = 85, libInc = 1,
+//'                             libIncFactor = 1.1, shiftMethod = "random",
+//'                             libShift = 1)
+//'
+//' so <- NldsPredSetConvergent(libSizeMin = 10,libSizeMax = 200, libInc = 1,
+//'                             libIncFactor = 1.3, shiftMethod = "bootstrap",
+//'                             nBootstrap = 3000)
+//'
+//' @export
 // [[Rcpp::export]]
 List NldsPredSetConvergent (const int libSizeMin,
                             const int libSizeMax,
@@ -241,6 +390,23 @@ BEGIN_RCPP
 END_RCPP
 }
 
+//' @name NldsPredSetKFold
+//'
+//' @title Create a list of options for the k-fold validation method
+//'
+//' @description
+//' This function checks the arguments and creates a list of options for the k-fold validation method.
+//' This list is used as an input argument for the NldsPredRun function.
+//'
+//' @param kFold    The factor k for the k-fold validation method.
+//'
+//' @param nRep     Number of repetitions.
+//'                 Before each repetition, the order of the points in the full set is reshuffled.
+//'                 Then a new cycle of k-fold validations is carried out.
+//'
+//' @return         This function returns a list of options.
+//'
+//' @export
 // [[Rcpp::export]]
 List NldsPredSetKFold (const int kFold,
                        const int nRep
@@ -253,6 +419,17 @@ BEGIN_RCPP
 END_RCPP
 }
 
+//' @name NldsPredSetLooc
+//'
+//' @title Create a list of options for the LOOC validation method
+//'
+//' @description
+//' This function creates a list of options for the LOOC validation method. This list is used as an input argument for the
+//' NldsPredRun function.
+//'
+//' @return         This function returns a list of options.
+//'
+//' @export
 // [[Rcpp::export]]
 List NldsPredSetLooc ()
 {
@@ -261,6 +438,40 @@ BEGIN_RCPP
 END_RCPP
 }
 
+//' @name NldsPredSetBootstrap
+//'
+//' @title Create a list of options for the bootstrap validation method
+//'
+//' @description
+//' This function checks the arguments and creates a list of options for the bootstrap validation method.
+//' This list is used as an input argument for the NldsPredRun function.
+//'
+//' @param nBootstrap  Number of bootstrap sets to create.
+//'
+//' @param libSize     Number of points to sample into each bootstrap set.
+//'
+//' @param preSetIsLib If this argument is set to TRUE, the prediction set will contain the same points 
+//'                    as the library set. Options: TRUE, FALSE.
+//'
+//' @param libSizeIsEmbSize If this argument is set to TRUE, the number of points in the library set will always 
+//'                         be set equal to the number of points in the embedding. If bundle embeddings are used,
+//'                         the sampled bootstrap set will contain as many vectors per bundle as the library set.
+//'                         Options: TRUE, FALSE.
+//'
+//' @param perAdditGroup    When additional variables are used, and this argument is set to TRUE, the number of
+//'                         vectors with a specific value for the additional variable will be the same as in the
+//'                         library set.  Options: TRUE, FALSE.
+//'
+//' @return         This function returns a list of options.
+//'
+//' @examples
+//' so <- NldsPredSetBootstrap(nBootstrap = 2000, preSetIsLib = FALSE,
+//'                            libSize = 300)
+//'
+//' so <- NldsPredSetBootstrap(nBootstrap = 1000, preSetIsLib = FALSE,
+//'                            libSizeIsEmbSize = TRUE)
+//'
+//' @export
 // [[Rcpp::export]]
 List NldsPredSetBootstrap (const int nBootstrap,
                            const int libSize = 0,
@@ -279,6 +490,101 @@ BEGIN_RCPP
 END_RCPP
 }
 
+//' @name NldsPredRun
+//'
+//' @title Starts the computations
+//'
+//' @description
+//' This function starts the computations.
+//'
+//' @param data           Numeric matrix with time-series values.
+//'                       Each column corresponds to one variable.
+//'                       Time, id and bundle values are not included in the matrix.
+//'                       These are supplied through the time, id or bundle argument respectively.
+//'                       Column names should be set and correspond to the variable names that are 
+//'                       used in the embLagDef or rangeDef arguments.
+//'
+//' @param logFile        Name of the log file where output will be written to.
+//'
+//' @param fnOpts         List of function options. Generated by NldsPredFnExpOpts or NldsPredFnTlsOpts.
+//'
+//' @param setOpts        List of validation set options. Generated by NldsPredSetBootstrap,
+//'                       NldsPredSetConvergent, NldsPredSetKFold or NldsPredSetLooc.
+//'
+//' @param time           When user-supplied time values are required in the log file, use this argument
+//'                       to supply a vector with integer values that can be transformed in real time
+//'                       values afterwards by the user. The length of this vector must be equal to the
+//'                       number of rows in the data matrix. Can be NULL.
+//'
+//' @param id             When dewdrop embeddings are used, use this argument to supply the ID strings of
+//'                       each row in the data matrix. The length of this vector must be equal to the
+//'                       number of rows in the data matrix. Can be NULL. If it is not NULL, then the
+//'                       NldsPredRun will automatically use dewdrop embeddings.
+//'
+//' @param bundle         When bundles are used, use this argument to supply the bundle values for each
+//'                       row in the data matrix. The number of rows in this numeric matrix must be equal
+//'                       to the number of rows in the data matrix. Can be NULL.
+//'
+//' @param embLagDef      Embedding lag definition string. Can be NULL if embRangeDef is supplied.
+//'
+//' @param embRangeDef    Embedding range definition string. Can be NULL if embLagDef is supplied.
+//'
+//' @return               This function returns the name of the log file.
+//'
+//' @examples
+//' # Create a list of parameters for the exponential prediction
+//' # function.
+//' fo <- NldsPredFnExpOpts (expK = 1.0, nnnAdd = 1, excl = "timeCoord", fnDenom = "min")
+//'
+//' # Create a list of validation set options for bootstrapping.
+//' so <- NldsPredSetBootstrap (nBootstrap = 5000, libSizeIsEmbSize = TRUE)
+//'
+//' # Matrix ds has two columns, x and y, with normalized
+//' # time-series data. ti is a vector with integer times,
+//' # corresponding to the rows in ds. The rows in ds, and the
+//' # values in ti, must be ordered by increasing time value.
+//' # Here, x is predicted from y, using several embedding
+//' # dimensions (defined by embRangeDef).
+//' fname <- NldsPredRun (data = ds, logFile = tempfile(), fnOpts = fo,
+//'                       setOpts = so, time = ti,
+//'                       embRangeDef = "y,0,3,1,trail:x,0")
+//'
+//' # Extract coordinates of points used in each embedding.
+//' embpoints <- NldsPredGetTable (logFileName = fname,
+//'                                fieldNames = c("embpar1_emb_label",
+//'                                               "embpar1_emb_num",
+//'                                               "embpar1_n_row",
+//'                                               "embpar1_e",
+//'                                               "embpar1_n_pre_val",
+//'                                               "embpar1_n_bundle_val",
+//'                                               "vid_vec_num",
+//'                                               "val_copr",
+//'                                               "val_idx",
+//'                                               "val_t",
+//'                                               "val_val"),
+//'                                newRecName = "VAL")
+//'
+//' # Extract general statistics that were generated by
+//' # NldsPredRun.
+//' stats <- NldsPredGetTable(logFileName = fname,
+//'                           fieldNames = c("embpar1_emb_num",
+//'                                          "embpar1_e",
+//'                                          "spbt_boot_i",
+//'                                          "stat_n_pre_obs",
+//'                                          "stat_avg_obs",
+//'                                          "stat_var_pre",
+//'                                          "stat_var_obs",
+//'                                          "stat_cov_pre_obs",
+//'                                          "stat_mae_pre_obs",
+//'                                          "stat_rmse_pre_obs",
+//'                                          "stat_md_pre",
+//'                                          "stat_md_obs",
+//'                                          "stat_mdad_pre",
+//'                                          "stat_mdad_obs",
+//'                                          "stat_mdae_pre_obs"),
+//'                           newRecName = "STAT")
+//'
+//' @export
 // [[Rcpp::export]]
 String NldsPredRun (const NumericMatrix & data,
                     const std::string logFile,

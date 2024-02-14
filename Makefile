@@ -36,6 +36,7 @@ RSRCREQ = NldsPredGetTable.cpp NldsPredRun.cpp Makevars
 build: cpall
 	cd $(ORIGINROOTDIR); \
 		Rscript --vanilla -e "Rcpp::compileAttributes(pkgdir=\"$(TARGETROOTDIR)\",verbose=TRUE)"; \
+		Rscript --vanilla -e "roxygen2::roxygenize(roclets='rd', package.dir=\"$(TARGETROOTDIR)\")"; \
 		R CMD build NldsPred
 
 install: build

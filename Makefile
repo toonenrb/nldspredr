@@ -25,7 +25,7 @@ RLIBREQ = bundle.c bundle.h bundle_log.h datalimits.h dqrdc.f \
   mkembed.c mkembed.h mkembed_log.h point.c point.h sets.c sets.h \
   sets_log.h stat.c stat.h stat_log.h tr2.f traverse.c traverse.h \
   traverse_log.h traverse_stat.h tsfile.c tsdat.h tsfile.h tstoembdef.c \
-  tstoembdef.h
+  tstoembdef.h printtm.c printtm.h
 
 RROOTREQ = DESCRIPTION NAMESPACE
 

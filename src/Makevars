@@ -21,7 +21,8 @@ SOURCES_NLPRE_ALL=./libnlpre/bundle.c ./libnlpre/bundle.h ./libnlpre/bundle_log.
 ./libnlpre/stat.h ./libnlpre/stat_log.h \
 ./libnlpre/tr2.f ./libnlpre/traverse.c ./libnlpre/traverse.h \
 ./libnlpre/traverse_log.h ./libnlpre/traverse_stat.h ./libnlpre/tsfile.c \
-./libnlpre/tsfile.h ./libnlpre/tstoembdef.c ./libnlpre/tstoembdef.h ./libnlpre/tsdat.h
+./libnlpre/tsfile.h ./libnlpre/tstoembdef.c ./libnlpre/tstoembdef.h ./libnlpre/tsdat.h \
+./libnlpre/printtm.h ./libnlpre/printtm.c
 
 OBJECTS_NLPRE_ALL_C = $(SOURCES_NLPRE_ALL:.c=.o)
 OBJECTS_NLPRE_ALL = $(OBJECTS_NLPRE_ALL_C:.f=.o)
